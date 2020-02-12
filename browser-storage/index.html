@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Project Template</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Styles -->
+    <style type="text/css">
+        body {
+            max-width: 40em;
+            width: 88%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        label,
+        input,
+        textarea {
+            width: 100%;
+        }
+
+        label {
+            font-weight: bold;
+        }
+
+        input,
+        textarea {
+            margin-bottom: 2em;
+        }
+
+        textarea {
+            height: 12em;
+        }
+    </style>
+</head>
+
+<body>
+
+    <form id="autosave">
+        <div>
+            <label for="name">Name</label>
+            <input type="text" id="name">
+        </div>
+
+        <div>
+            <label for="email">Email Address</label>
+            <input type="email" id="email">
+        </div>
+
+        <div>
+            <label for="notes">Notes</label>
+            <textarea id="notes"></textarea>
+        </div>
+    </form>
+
+
+    <!-- Scripts -->
+    <script>
+        // Get all potential input
+        var inputs = document.querySelectorAll('input, textarea');
+
+        // Get any existing data
+        var saved = localStorage.getItem('formAutosaveData')
+
+        // If there is saved data
+        if (saved) {
+            // Convert back to a readable obj
+            saved = JSON.parse(saved)
+            // Loop through available saved data and populate
+            for (var i = 0; i < inputs.length; i++) {
+
+                // Check for saved data
+                var val = saved[inputs[i].id];
+
+                // If saved data, load it
+                if (!val) continue;
+                inputs[i].value = val;
+            }
+        }
+        // Save user input to localStorage
+        document.addEventListener('input', function (event) {
+
+            // Get any saved form data from localStorage
+            var saved = localStorage.getItem('formAutosaveData');
+
+            // Check for data, covert with JSON.parse, OR empty obj
+            saved = saved ? JSON.parse(saved) : {};
+
+            // Push the field data to the saved obj
+            saved[event.target.id] = event.target.value;
+
+            // Save data to localStorage
+            localStorage.setItem('formAutosaveData', JSON.stringify(saved))
+        })
+
+    </script>
+</body>
+
+</html>
