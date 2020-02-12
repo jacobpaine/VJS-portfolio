@@ -1,6 +1,6 @@
 # VJS-portfolio
 
-##GoMakeThings Portfolio
+## GoMakeThings Portfolio
 This repo is my work through of the GoMakeThings tutorials (https://gomakethings.com/). 
 
 
