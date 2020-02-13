@@ -66,6 +66,15 @@ A more in-depth tutorial than the previous ones. This tutorial highlights:
     - CustomEvent
 7. Discussion about bubbling
 
+## whos-driving-webapp
+A complete app resembling the typical to-do list
+1. Uses the Constructor pattern to create an external component
+2. Includes state-based UI (Javascript)
+3. Clear commenting
+4. Good examples of event handlers
+5. Uses the helper methods:
+    - sanitizeHTML
+    - shuffle (for arrays)
 
 
 

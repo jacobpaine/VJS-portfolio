@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Who's Driving?</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Styles -->
+    <style type="text/css">
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+            font-size: 112.5%;
+            max-width: 40em;
+            width: 88%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /**
+			 * Form styles
+			 */
+
+        label,
+        input {
+            display: block;
+            width: 100%;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Who's Driving?</h1>
+
+    <div id="app" aria-live='polite'></div>
+
+    <form id="add-driver">
+        <label for="driver-name">Add a name to the list of possible drivers</label>
+        <input type="text" id="driver-name">
+        <button>Add a Driver</button>
+    </form>
+
+    <p>
+        <button id="pick-driver">Pick a Driver</button>
+        <button id="clear-drivers">Remove All Drivers</button>
+    </p>
+
+    <script src="component.js"></script>
+    <script>
+        /*!
+         * Sanitize and encode all HTML in a user-submitted string
+         * (c) 2018 Chris Ferdinandi, MIT License, https://gomakethings.com
+         * @param  {String} str  The user-submitted string
+         * @return {String} str  The sanitized string
+         */
+        var sanitizeHTML = function (str) {
+            var temp = document.createElement('div');
+            temp.textContent = str;
+            return temp.innerHTML;
+        };
+
+        /**
+         * Randomly shuffle an array
+         * https://stackoverflow.com/a/2450976/1293256
+         * @param  {Array} array The array to shuffle
+         * @return {String}      The first item in the shuffled array
+         */
+        var shuffle = function (array) {
+
+            var currentIndex = array.length;
+            var temporaryValue, randomIndex;
+
+            // While there remain elements to shuffle...
+            while (0 !== currentIndex) {
+                // Pick a remaining element...
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex -= 1;
+
+                // And swap it with the current element.
+                temporaryValue = array[currentIndex];
+                array[currentIndex] = array[randomIndex];
+                array[randomIndex] = temporaryValue;
+            }
+
+            return array;
+
+        };
+        // Create component
+        var app = new Component('#app', {
+            data: {
+                drivers: [],
+                selected: null
+            },
+            template: function (props) {
+
+                // Save drivers to localStorage
+                localStorage.setItem('drivers', JSON.stringify(props.drivers))
+                // Make sure there 1 driver
+                if (props.drivers.length < 1) return "<p>To get started add some drivers...</p>";
+
+                var selected = '';
+                if (props.selected) {
+                    selected = '<p><strong>' + sanitizeHTML(props.selected) + '</strong> is the driver!</p>'
+                }
+
+                // Display drivers
+                return '<ul>' + props.drivers.map(function (driver, index) {
+                    var name = sanitizeHTML(driver)
+                    return '<li>' + name + ' <button data-driver=' + index + ' aria-label="Remove ' + name + '">Remove!</button></li>';
+                }).join('') + '</ul>' + selected;
+            }
+        })
+
+        // Pick the driver
+        var pickDriver = function () {
+            // Get the data
+            var data = app.getData();
+
+            // Ensure there are two drivers
+            if (data.drivers.length < 2) {
+                alert('You need at least 2 drivers! Add more.')
+            }
+
+            // Shuffle the array of drivers
+            shuffle(data.drivers)
+
+            // Pick the Driver
+            var selected = data.drivers[0]
+            if (data.selected && selected === data.selected) {
+                selected = data.drivers[1];
+            }
+
+            // Update the data and UI
+            app.setData({ selected: selected })
+        }
+
+        // Remove driver method
+        var removeDriver = function (driver) {
+            // Get a copy of the drivers
+            var data = app.getData();
+
+            // Remove the driver from the list
+            data.drivers.splice(driver, 1);
+
+            // Update the data & UI
+            app.setData({ drivers: data.drivers })
+        }
+        // Remove all drivers
+        var clearDrivers = function () {
+            app.setData({ drivers: [], selected: null })
+        }
+
+        // Handle click events
+        var clickHandler = function (event) {
+            // Pick Driver Clicked
+            if (event.target.id === 'pick-driver') {
+                pickDriver();
+            }
+
+            // If a data-driver button was clicked  
+            var driver = event.target.getAttribute('data-driver')
+            if (driver) {
+                removeDriver(driver);
+            }
+
+            // If remove all is called
+            if (event.target.id === 'clear-drivers') {
+                clearDrivers();
+            }
+
+        }
+
+        // Handle submissions
+        var submitHandler = function (event) {
+            // Is this the Add Driver form?
+            if (event.target.id !== 'add-driver') return;
+
+            // Prevent the form from submitting to server
+            event.preventDefault();
+
+            // Get the driver name
+            var input = event.target.querySelector('#driver-name');
+            if (!input || input.value.length < 1) return;
+
+            // Update the data and UI
+            var data = app.getData();
+            data.drivers.push(input.value);
+            app.setData({ drivers: data.drivers })
+
+            // Clear the input and return focus()
+            input.value = '';
+            input.focus();
+        }
+
+        // Inits and Event Listeners
+        var saved = localStorage.getItem("drivers");
+        if (saved) {
+            app.setData({ drivers: JSON.parse(saved) })
+        } else {
+            // Render the initial UI
+            app.render();
+        }
+
+
+        // Event Listeners
+        document.addEventListener('submit', submitHandler, false);
+        document.addEventListener('click', clickHandler, false)
+    </script>
+</body>
+
+</html>
